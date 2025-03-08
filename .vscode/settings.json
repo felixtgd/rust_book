@@ -1,0 +1,28 @@
+{
+    "rust-analyzer.procMacro.enable": true,
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": true,
+    "editor.renderWhitespace": "trailing",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    // Rust analyzer settings
+    "rust-analyzer.cargo.runBuildScripts": true,
+    "rust-analyzer.checkOnSave.command": "clippy",
+    "rust-analyzer.inlayHints.enable": true,
+    "rust-analyzer.inlayHints.typeHints.enable": true,
+    "rust-analyzer.inlayHints.parameterHints.enable": true,
+
+    "terminal.integrated.env.osx": {
+        "CARGO_HOME": "${workspaceFolder}/.cargo",
+        "RUSTUP_HOME": "${workspaceFolder}/.rustup"
+    },
+    "terminal.integrated.env.linux": {
+        "CARGO_HOME": "${workspaceFolder}/.cargo",
+        "RUSTUP_HOME": "${workspaceFolder}/.rustup"
+    },
+    "terminal.integrated.env.windows": {
+        "CARGO_HOME": "${workspaceFolder}/.cargo",
+        "RUSTUP_HOME": "${workspaceFolder}/.rustup"
+    }
+}

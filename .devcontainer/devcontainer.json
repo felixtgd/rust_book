@@ -1,0 +1,47 @@
+{
+    "name": "rust_devcontainer",
+    "image": "mcr.microsoft.com/devcontainers/rust:1-bullseye",
+    // Configure tool-specific properties.
+    "customizations": {
+        "vscode": {
+        // Configure properties specific to VS Code.
+            // Set *default* container specific settings.json values on container create.
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh"
+            },
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "github.vscode-github-actions",
+                "github.copilot",
+                "gitHub.copilot-chat"
+            ]
+        }
+    },
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    "forwardPorts": [
+        8000,
+        3000
+    ],
+    // Use 'postCreateCommand' to run commands after the container is created.
+    // Use updateContent when stuff has to be installed into the image,
+    // postcreate to do commands in userspace after container has been started
+    "updateContentCommand": "zsh .devcontainer/updateContentCommand.sh",
+    "postCreateCommand": "zsh .devcontainer/postCreateCommand.sh",
+    // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+    "remoteUser": "vscode",
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": "true",
+            "username": "vscode",
+            "userUid": "1000",
+            "userGid": "1000",
+            "upgradePackages": "true"
+        },
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    }
+}
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.238.1/containers/rust-1
