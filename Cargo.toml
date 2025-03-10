@@ -4,8 +4,3 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-pre-commit = "0.5.2"
-
-[package.metadata.precommit]
-fmt = "cargo fmt -- --check"
-clippy = "cargo clippy --all-targets -- -D warnings"
