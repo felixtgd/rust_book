@@ -1,4 +1,5 @@
 use rand::prelude::SliceRandom;
+use std::io;
 
 fn main() {
     let cards: [&str; 13] = [
@@ -20,7 +21,7 @@ fn main() {
         dealer_hand.extend(deck.pop());
     }
 
-    let player_score: u32 = calculate_score(&player_hand);
+    let mut player_score: u32 = calculate_score(&player_hand);
     let dealer_score: u32 = calculate_score(&dealer_hand);
 
     let player_blackjack: bool = check_blackjack(&player_hand);
@@ -35,6 +36,34 @@ fn main() {
         dealer_hand, dealer_score, dealer_blackjack
     ); // delete later
     println!("Dealer's open card: {:?}", dealer_hand[0]);
+
+    let mut player_round: bool = true;
+
+    while player_round {
+        println!("What's your move? Hit or stand? h|s");
+
+        let mut action = String::new();
+
+        io::stdin()
+            .read_line(&mut action)
+            .expect("Failed to read line");
+
+        match action.trim() {
+            "h" => {
+                player_hand.extend(deck.pop());
+                player_score = calculate_score(&player_hand);
+                println!("Your hand: {:?}, Score: {}", player_hand, player_score);
+                if check_bust(player_score) {
+                    println!("You went bust. You loose.");
+                    player_round = false;
+                }
+            }
+            "s" => {
+                player_round = false;
+            }
+            _ => continue,
+        }
+    }
 }
 
 fn calculate_score(hand: &Vec<&str>) -> u32 {
@@ -76,4 +105,8 @@ fn check_blackjack(hand: &Vec<&str>) -> bool {
     }
 
     ace && ten
+}
+
+fn check_bust(score: u32) -> bool {
+    score > 21
 }
