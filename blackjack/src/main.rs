@@ -23,8 +23,18 @@ fn main() {
     let player_score: u32 = calculate_score(&player_hand);
     let dealer_score: u32 = calculate_score(&dealer_hand);
 
-    println!("Player hand: {:?}, Score: {}", player_hand, player_score);
-    println!("Dealer hand: {:?}, Score: {}", dealer_hand, dealer_score);
+    let player_blackjack: bool = check_blackjack(&player_hand);
+    let dealer_blackjack: bool = check_blackjack(&dealer_hand);
+
+    println!(
+        "Your hand: {:?}, Score: {}, Blackjack: {}",
+        player_hand, player_score, player_blackjack
+    );
+    println!(
+        "Dealer's hand: {:?}, Score: {}, Blackjack: {}",
+        dealer_hand, dealer_score, dealer_blackjack
+    ); // delete later
+    println!("Dealer's open card: {:?}", dealer_hand[0]);
 }
 
 fn calculate_score(hand: &Vec<&str>) -> u32 {
@@ -52,4 +62,18 @@ fn calculate_score(hand: &Vec<&str>) -> u32 {
     }
 
     score
+}
+
+fn check_blackjack(hand: &Vec<&str>) -> bool {
+    let mut ace: bool = false;
+    let mut ten: bool = false;
+    for card in hand.iter() {
+        match *card {
+            "A" => ace = true,
+            "10" | "J" | "Q" | "K" => ten = true,
+            _ => (),
+        }
+    }
+
+    ace && ten
 }
