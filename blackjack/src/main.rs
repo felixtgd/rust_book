@@ -1,7 +1,7 @@
 use rand::prelude::SliceRandom;
 
 fn main() {
-    let cards: Vec<&str> = vec![
+    let cards: [&str; 13] = [
         "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K",
     ];
 
@@ -20,16 +20,16 @@ fn main() {
         dealer_hand.extend(deck.pop());
     }
 
-    let player_score: i32 = calculate_score(&player_hand);
-    let dealer_score: i32 = calculate_score(&dealer_hand);
+    let player_score: u32 = calculate_score(&player_hand);
+    let dealer_score: u32 = calculate_score(&dealer_hand);
 
     println!("Player hand: {:?}, Score: {}", player_hand, player_score);
     println!("Dealer hand: {:?}, Score: {}", dealer_hand, dealer_score);
 }
 
-fn calculate_score(hand: &Vec<&str>) -> i32 {
-    let mut score: i32 = 0;
-    let mut num_aces: i32 = 0;
+fn calculate_score(hand: &Vec<&str>) -> u32 {
+    let mut score: u32 = 0;
+    let mut num_aces: u32 = 0;
 
     for card in hand.iter() {
         match *card {
@@ -38,12 +38,9 @@ fn calculate_score(hand: &Vec<&str>) -> i32 {
                 num_aces += 1;
             }
             "J" | "Q" | "K" => score += 10,
-            num_str => {
-                if let Ok(num) = num_str.parse::<i32>() {
-                    score += num;
-                } else {
-                    println!("Warning: Could not parse card '{}' as a number!", num_str);
-                }
+            num_card => {
+                let card_val: u32 = num_card.parse().expect("Could not parse card as a number!");
+                score += card_val;
             }
         }
     }
