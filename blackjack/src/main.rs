@@ -1,4 +1,5 @@
 use rand::prelude::SliceRandom;
+use std::cmp::Ordering;
 use std::io;
 
 fn main() {
@@ -22,7 +23,7 @@ fn main() {
     }
 
     let mut player_score: u32 = calculate_score(&player_hand);
-    let dealer_score: u32 = calculate_score(&dealer_hand);
+    let mut dealer_score: u32 = calculate_score(&dealer_hand);
 
     let player_blackjack: bool = check_blackjack(&player_hand);
     let dealer_blackjack: bool = check_blackjack(&dealer_hand);
@@ -37,13 +38,9 @@ fn main() {
     ); // delete later
     println!("Dealer's open card: {:?}", dealer_hand[0]);
 
-    let mut player_round: bool = true;
-
-    while player_round {
+    loop {
         println!("What's your move? Hit or stand? h|s");
-
         let mut action = String::new();
-
         io::stdin()
             .read_line(&mut action)
             .expect("Failed to read line");
@@ -54,15 +51,32 @@ fn main() {
                 player_score = calculate_score(&player_hand);
                 println!("Your hand: {:?}, Score: {}", player_hand, player_score);
                 if check_bust(player_score) {
-                    println!("You went bust. You loose.");
-                    player_round = false;
+                    println!("You went bust. You loose!");
+                    std::process::exit(0);
                 }
             }
-            "s" => {
-                player_round = false;
-            }
+            "s" => break,
             _ => continue,
         }
+    }
+
+    while dealer_score < 17 {
+        dealer_hand.extend(deck.pop());
+        dealer_score = calculate_score(&dealer_hand);
+    }
+
+    println!("Dealer's hand: {:?}, Score: {}", dealer_hand, dealer_score);
+    if check_bust(dealer_score) {
+        println!("Dealer went bust. You win!");
+        std::process::exit(0);
+    }
+
+    println!("Your hand: {:?}, Score: {}", player_hand, player_score);
+
+    match player_score.cmp(&dealer_score) {
+        Ordering::Less => println!("You loose!"),
+        Ordering::Greater => println!("Congratulations, you win!"),
+        Ordering::Equal => println!("Tie."),
     }
 }
 
