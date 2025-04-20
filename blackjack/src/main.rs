@@ -2,26 +2,46 @@ use rand::prelude::SliceRandom;
 use std::cmp::Ordering;
 use std::io;
 
+struct Deck {
+    cards: Vec<String>,
+}
+
+impl Deck {
+    fn new() -> Self {
+        let card_types: [&str; 13] = [
+            "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K",
+        ];
+
+        let mut cards: Vec<String> = Vec::new();
+        for _ in 0..4 {
+            for &card in &card_types {
+                cards.push(card.to_string());
+            }
+        }
+        cards.shuffle(&mut rand::rng());
+
+        Self { cards }
+    }
+
+    fn pop(&mut self) -> String {
+        self.cards
+            .pop()
+            .expect("Deck is empty. No more cards to withdraw.")
+    }
+}
+
 fn main() {
     println!("Welcome to Blackjack!");
 
-    let cards: [&str; 13] = [
-        "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K",
-    ];
-
-    let mut deck: Vec<&str> = vec![];
-    for _ in 0..4 {
-        deck.extend(cards.iter().cloned());
-    }
-    deck.shuffle(&mut rand::rng());
+    let mut deck: Deck = Deck::new();
 
     // deal initial hands
-    let mut player_hand: Vec<&str> = vec![];
-    let mut dealer_hand: Vec<&str> = vec![];
+    let mut player_hand: Vec<String> = Vec::new();
+    let mut dealer_hand: Vec<String> = Vec::new();
 
     for _ in 0..2 {
-        player_hand.extend(deck.pop());
-        dealer_hand.extend(deck.pop());
+        player_hand.push(deck.pop());
+        dealer_hand.push(deck.pop());
     }
 
     if check_blackjack(&player_hand) {
@@ -53,7 +73,7 @@ fn main() {
             .expect("Failed to read line");
 
         match action.trim() {
-            "h" => player_hand.extend(deck.pop()),
+            "h" => player_hand.push(deck.pop()),
             "s" => break,
             _ => continue,
         }
@@ -61,7 +81,7 @@ fn main() {
 
     let mut dealer_score: u32 = calculate_score(&dealer_hand);
     while dealer_score < 17 {
-        dealer_hand.extend(deck.pop());
+        dealer_hand.push(deck.pop());
         dealer_score = calculate_score(&dealer_hand);
     }
 
@@ -81,12 +101,12 @@ fn main() {
     }
 }
 
-fn calculate_score(hand: &Vec<&str>) -> u32 {
+fn calculate_score(hand: &[String]) -> u32 {
     let mut score: u32 = 0;
     let mut num_aces: u32 = 0;
 
     for card in hand.iter() {
-        match *card {
+        match card.as_str() {
             "A" => {
                 score += 11; // Treat Ace as 11 initially
                 num_aces += 1;
@@ -108,11 +128,11 @@ fn calculate_score(hand: &Vec<&str>) -> u32 {
     score
 }
 
-fn check_blackjack(hand: &Vec<&str>) -> bool {
+fn check_blackjack(hand: &[String]) -> bool {
     let mut ace: bool = false;
     let mut ten: bool = false;
     for card in hand.iter() {
-        match *card {
+        match card.as_str() {
             "A" => ace = true,
             "10" | "J" | "Q" | "K" => ten = true,
             _ => (),
