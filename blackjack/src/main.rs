@@ -1,6 +1,7 @@
 use rand::prelude::SliceRandom;
 use std::cmp::Ordering;
 use std::io;
+use std::iter::repeat;
 
 struct Deck {
     cards: Vec<String>,
@@ -12,12 +13,11 @@ impl Deck {
             "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K",
         ];
 
-        let mut cards: Vec<String> = Vec::new();
-        for _ in 0..4 {
-            for &card in &card_types {
-                cards.push(card.to_string());
-            }
-        }
+        let mut cards: Vec<String> = card_types
+            .iter()
+            .flat_map(|&card| repeat(card.to_string()).take(4))
+            .collect();
+
         cards.shuffle(&mut rand::rng());
 
         Self { cards }
