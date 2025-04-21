@@ -30,38 +30,106 @@ impl Deck {
     }
 }
 
+struct Hand {
+    cards: Vec<String>,
+    score: u32,
+    is_bust: bool,
+    has_blackjack: bool,
+}
+
+impl Hand {
+    fn new() -> Self {
+        Self {
+            cards: Vec::new(),
+            score: 0,
+            is_bust: false,
+            has_blackjack: false,
+        }
+    }
+
+    fn deal_cards(&mut self, deck: &mut Deck, n: u32) {
+        for _ in 0..n {
+            self.cards.push(deck.pop());
+        }
+    }
+
+    fn has_blackjack(&mut self) -> bool {
+        let mut ace: bool = false;
+        let mut ten: bool = false;
+        for card in self.cards.iter() {
+            match card.as_str() {
+                "A" => ace = true,
+                "10" | "J" | "Q" | "K" => ten = true,
+                _ => (),
+            }
+        }
+        self.has_blackjack = ace && ten;
+        self.has_blackjack
+    }
+
+    fn calculate_score(&mut self) -> u32 {
+        let mut score: u32 = 0;
+        let mut num_aces: u32 = 0;
+
+        for card in self.cards.iter() {
+            match card.as_str() {
+                "A" => {
+                    score += 11; // Treat Ace as 11 initially
+                    num_aces += 1;
+                }
+                "J" | "Q" | "K" => score += 10,
+                num_card => {
+                    let card_val: u32 =
+                        num_card.parse().expect("Could not parse card as a number!");
+                    score += card_val;
+                }
+            }
+        }
+
+        // Adjust score for Aces if it exceeds 21
+        while score > 21 && num_aces > 0 {
+            score -= 10; // Change an Ace from 11 to 1
+            num_aces -= 1;
+        }
+
+        self.score = score;
+        score
+    }
+
+    fn is_bust(&mut self) -> bool {
+        self.is_bust = self.score > 21;
+        self.is_bust
+    }
+}
+
 fn main() {
     println!("Welcome to Blackjack!");
 
     let mut deck: Deck = Deck::new();
+    let mut player: Hand = Hand::new();
+    let mut dealer: Hand = Hand::new();
 
-    // deal initial hands
-    let mut player_hand: Vec<String> = Vec::new();
-    let mut dealer_hand: Vec<String> = Vec::new();
+    let n: u32 = 2;
+    player.deal_cards(&mut deck, n);
+    dealer.deal_cards(&mut deck, n);
 
-    for _ in 0..2 {
-        player_hand.push(deck.pop());
-        dealer_hand.push(deck.pop());
-    }
-
-    if check_blackjack(&player_hand) {
+    if player.has_blackjack() {
         println!("\nBlackjack! You win!");
         std::process::exit(0);
     }
 
-    if check_blackjack(&dealer_hand) {
+    if dealer.has_blackjack() {
         println!("\nDealer has Blackjack. You loose!");
         std::process::exit(0);
     }
 
-    println!("\nDealer's open card: {:?}", dealer_hand[0]);
+    println!("\nDealer's open card: {:?}", dealer.cards[0]);
 
-    let mut player_score: u32;
     loop {
-        player_score = calculate_score(&player_hand);
-        println!("\nYour hand: {:?}, Score: {}", player_hand, player_score);
+        player.calculate_score();
+        println!("\nYour hand: {:?}, Score: {}", player.cards, player.score);
 
-        if check_bust(player_score) {
+        if player.is_bust() {
             println!("You went bust. You loose!");
             std::process::exit(0);
         }
@@ -73,75 +141,30 @@ fn main() {
             .expect("Failed to read line");
 
         match action.trim() {
-            "h" => player_hand.push(deck.pop()),
+            "h" => player.deal_cards(&mut deck, 1),
             "s" => break,
             _ => continue,
         }
     }
 
-    let mut dealer_score: u32 = calculate_score(&dealer_hand);
-    while dealer_score < 17 {
-        dealer_hand.push(deck.pop());
-        dealer_score = calculate_score(&dealer_hand);
+    dealer.calculate_score();
+    while dealer.score < 17 {
+        dealer.deal_cards(&mut deck, 1);
+        dealer.calculate_score();
     }
 
     println!(
         "\nDealer's hand: {:?}, Score: {}",
-        dealer_hand, dealer_score
+        dealer.cards, dealer.score
     );
-    if check_bust(dealer_score) {
+    if dealer.is_bust() {
         println!("Dealer went bust. You win!");
         std::process::exit(0);
     }
 
-    match player_score.cmp(&dealer_score) {
+    match player.score.cmp(&dealer.score) {
         Ordering::Less => println!("You loose!"),
         Ordering::Greater => println!("Congratulations, you win!"),
         Ordering::Equal => println!("Tie."),
     }
-}
-
-fn calculate_score(hand: &[String]) -> u32 {
-    let mut score: u32 = 0;
-    let mut num_aces: u32 = 0;
-
-    for card in hand.iter() {
-        match card.as_str() {
-            "A" => {
-                score += 11; // Treat Ace as 11 initially
-                num_aces += 1;
-            }
-            "J" | "Q" | "K" => score += 10,
-            num_card => {
-                let card_val: u32 = num_card.parse().expect("Could not parse card as a number!");
-                score += card_val;
-            }
-        }
-    }
-
-    // Adjust score for Aces if it exceeds 21
-    while score > 21 && num_aces > 0 {
-        score -= 10; // Change an Ace from 11 to 1
-        num_aces -= 1;
-    }
-
-    score
-}
-
-fn check_blackjack(hand: &[String]) -> bool {
-    let mut ace: bool = false;
-    let mut ten: bool = false;
-    for card in hand.iter() {
-        match card.as_str() {
-            "A" => ace = true,
-            "10" | "J" | "Q" | "K" => ten = true,
-            _ => (),
-        }
-    }
-
-    ace && ten
-}
-
-fn check_bust(score: u32) -> bool {
-    score > 21
 }
