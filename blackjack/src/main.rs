@@ -30,11 +30,14 @@ impl Deck {
     }
 }
 
+#[derive(Debug)]
 struct Hand {
     cards: Vec<String>,
     score: u32,
+    actions: Vec<String>,
     is_bust: bool,
     has_blackjack: bool,
+    wins: bool,
 }
 
 impl Hand {
@@ -42,8 +45,10 @@ impl Hand {
         Self {
             cards: Vec::new(),
             score: 0,
+            actions: Vec::new(),
             is_bust: false,
             has_blackjack: false,
+            wins: false,
         }
     }
 
@@ -51,6 +56,8 @@ impl Hand {
         for _ in 0..n {
             self.cards.push(deck.pop());
         }
+        self.calculate_score();
+        self.is_bust();
     }
 
     fn has_blackjack(&mut self) -> bool {
@@ -100,6 +107,20 @@ impl Hand {
         self.is_bust = self.score > 21;
         self.is_bust
     }
+
+    fn hit(&mut self, deck: &mut Deck) {
+        self.actions.push(String::from("h"));
+        self.deal_cards(deck, 1);
+    }
+
+    fn stand(&mut self) {
+        self.actions.push(String::from("s"));
+    }
+}
+
+fn game_over(winner: &mut Hand, loser: &mut Hand) {
+    winner.wins = true;
+    loser.wins = false;
 }
 
 fn main() {
@@ -115,56 +136,77 @@ fn main() {
 
     if player.has_blackjack() {
         println!("\nBlackjack! You win!");
-        std::process::exit(0);
+        game_over(&mut player, &mut dealer);
     }
 
     if dealer.has_blackjack() {
         println!("\nDealer has Blackjack. You loose!");
-        std::process::exit(0);
+        game_over(&mut dealer, &mut player);
     }
 
     println!("\nDealer's open card: {:?}", dealer.cards[0]);
 
-    loop {
-        player.calculate_score();
+    while !(player.wins || dealer.wins) {
         println!("\nYour hand: {:?}, Score: {}", player.cards, player.score);
-
-        if player.is_bust() {
-            println!("You went bust. You loose!");
-            std::process::exit(0);
-        }
-
         println!("What's your move? Hit or stand? h|s");
+
         let mut action = String::new();
         io::stdin()
             .read_line(&mut action)
             .expect("Failed to read line");
 
         match action.trim() {
-            "h" => player.deal_cards(&mut deck, 1),
-            "s" => break,
+            "h" => {
+                player.hit(&mut deck);
+                if player.is_bust() {
+                    println!("You went bust. You loose!");
+                    game_over(&mut dealer, &mut player);
+                }
+            }
+            "s" => {
+                player.stand();
+                break;
+            }
             _ => continue,
         }
     }
 
-    dealer.calculate_score();
-    while dealer.score < 17 {
-        dealer.deal_cards(&mut deck, 1);
-        dealer.calculate_score();
+    while !(player.wins || dealer.wins) {
+        if dealer.score < 17 {
+            dealer.hit(&mut deck);
+            if dealer.is_bust() {
+                println!("Dealer went bust. You win!");
+                game_over(&mut player, &mut dealer);
+            }
+        } else {
+            dealer.stand();
+            break;
+        }
     }
 
-    println!(
-        "\nDealer's hand: {:?}, Score: {}",
-        dealer.cards, dealer.score
-    );
-    if dealer.is_bust() {
-        println!("Dealer went bust. You win!");
-        std::process::exit(0);
+    if !(player.wins || dealer.wins) {
+        println!(
+            "\nDealer's hand: {:?}, Score: {}",
+            dealer.cards, dealer.score
+        );
+
+        match player.score.cmp(&dealer.score) {
+            Ordering::Less => {
+                println!("You loose!");
+                game_over(&mut dealer, &mut player);
+            }
+            Ordering::Greater => {
+                println!("Congratulations, you win!");
+                game_over(&mut player, &mut dealer);
+            }
+            Ordering::Equal => {
+                println!("Tie.");
+                player.wins = false;
+                dealer.wins = false;
+            }
+        }
     }
 
-    match player.score.cmp(&dealer.score) {
-        Ordering::Less => println!("You loose!"),
-        Ordering::Greater => println!("Congratulations, you win!"),
-        Ordering::Equal => println!("Tie."),
-    }
+    println!("Player: {:?}", player);
+    print!("Dealer: {:?}", dealer);
 }
