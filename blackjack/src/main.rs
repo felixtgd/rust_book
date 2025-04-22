@@ -1,7 +1,5 @@
 use rand::prelude::SliceRandom;
-use std::cmp::Ordering;
-use std::io;
-use std::iter::repeat;
+use std::{cmp::Ordering, io, iter::repeat};
 
 struct Deck {
     cards: Vec<String>,
