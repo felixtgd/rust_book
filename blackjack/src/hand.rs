@@ -1,6 +1,6 @@
 use crate::deck::Deck;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Hand {
     pub cards: Vec<String>,
     pub score: u32,

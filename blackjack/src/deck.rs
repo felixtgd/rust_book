@@ -1,6 +1,7 @@
 use rand::prelude::SliceRandom;
 use std::iter::repeat;
 
+#[derive(Default)]
 pub struct Deck {
     pub cards: Vec<String>,
 }
