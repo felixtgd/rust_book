@@ -9,24 +9,33 @@ fn main() {
 
     println!("\nDealer's open card: {:?}", game.dealer_hand().cards[0]);
 
-    while !game.is_over() && game.players_turn() {
-        println!(
-            "\nYour hand: {:?}, Score: {}",
-            game.player_hand().cards,
-            game.player_hand().score
-        );
-        println!("What's your move? Hit or stand? h|s");
+    while !game.is_over() {
+        // Player's turn
+        if game.players_turn() {
+            println!(
+                "\nYour hand: {:?}, Score: {}",
+                game.player_hand().cards,
+                game.player_hand().score
+            );
+            println!("What's your move? Hit or stand? h|s");
 
-        let mut action = String::new();
-        io::stdin()
-            .read_line(&mut action)
-            .expect("Failed to read line");
+            let mut action = String::new();
+            io::stdin()
+                .read_line(&mut action)
+                .expect("Failed to read line");
 
-        game.player_action(action);
-    }
+            game.player_action(action);
+            continue;
+        }
 
-    while !game.is_over() && game.dealers_turn() {
-        game.dealer_action();
+        // Dealer's turn
+        if game.dealers_turn() {
+            game.dealer_action();
+            continue;
+        }
+
+        // Resolve game if neither player's or dealer's turn
+        break;
     }
 
     if !game.is_over() {
@@ -39,5 +48,5 @@ fn main() {
     }
 
     println!("Player: {:?}", game.player);
-    print!("Dealer: {:?}", game.dealer);
+    println!("Dealer: {:?}", game.dealer);
 }
