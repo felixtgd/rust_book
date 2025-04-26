@@ -3,7 +3,7 @@ use std::iter::repeat;
 
 #[derive(Default)]
 pub struct Deck {
-    pub cards: Vec<String>,
+    cards: Vec<String>,
 }
 
 impl Deck {

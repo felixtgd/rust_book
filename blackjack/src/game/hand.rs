@@ -1,9 +1,10 @@
-use crate::deck::Deck;
+use crate::game::deck::Deck;
 
 #[derive(Default, Clone)]
 pub struct Hand {
     pub cards: Vec<String>,
     pub score: u8,
+    pub actions: Vec<String>,
 }
 
 impl Hand {
@@ -11,6 +12,7 @@ impl Hand {
         Self {
             cards: Vec::new(),
             score: 0,
+            actions: Vec::new(),
         }
     }
 
@@ -39,12 +41,12 @@ impl Hand {
     }
 
     pub fn hit(&mut self, deck: &mut Deck) {
-        // self.actions.push(String::from("h"));
+        self.actions.push(String::from("h"));
         self.deal_cards(deck, 1);
     }
 
     pub fn stand(&mut self) {
-        // self.actions.push(String::from("s"));
+        self.actions.push(String::from("s"));
     }
 
     pub fn calculate_score(&mut self) {

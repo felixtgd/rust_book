@@ -1,4 +1,4 @@
-use blackjack::Game;
+use blackjack::game::game_impl::Game;
 use std::io;
 
 fn main() {
