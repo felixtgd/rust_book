@@ -17,12 +17,12 @@ impl Deck {
             .flat_map(|&card| repeat(card.to_string()).take(4))
             .collect();
 
-        cards.shuffle(&mut rand::rng()); // Fixed: use rng() as thread_rng() is deprecated
+        cards.shuffle(&mut rand::rng());
 
         Self { cards }
     }
 
-    pub fn pop(&mut self) -> String {
+    pub fn draw(&mut self) -> String {
         self.cards
             .pop()
             .expect("Deck is empty. No more cards to withdraw.")

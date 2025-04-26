@@ -2,22 +2,13 @@ use blackjack::Game;
 use std::io;
 
 fn main() {
-    println!("Welcome to Blackjack!");
-
     let mut game = Game::new();
     game.start();
-
-    println!("\nDealer's open card: {:?}", game.dealer_hand().cards[0]);
 
     while !game.is_over() {
         // Player's turn
         if game.players_turn() {
-            println!(
-                "\nYour hand: {:?}, Score: {}",
-                game.player_hand().cards,
-                game.player_hand().score
-            );
-            println!("What's your move? Hit or stand? h|s");
+            game.show_state();
 
             let mut action = String::new();
             io::stdin()
@@ -39,14 +30,8 @@ fn main() {
     }
 
     if !game.is_over() {
-        println!(
-            "\nDealer's hand: {:?}, Score: {}",
-            game.dealer_hand().cards,
-            game.dealer_hand().score
-        );
         game.select_winner();
     }
 
-    println!("Player: {:?}", game.player_hand());
-    println!("Dealer: {:?}", game.dealer_hand());
+    game.show_state()
 }

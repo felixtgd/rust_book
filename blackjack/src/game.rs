@@ -2,24 +2,26 @@ use crate::deck::Deck;
 use crate::hand::Hand;
 use std::cmp::Ordering;
 
-pub struct Game {
-    deck: Deck,
-    player: Hand,
-    dealer: Hand,
-    state: GameState,
-}
-
-pub enum GameState {
+#[derive(Clone)]
+pub enum GameStage {
     PlayerTurn,
     DealerTurn,
     Resolve,
     GameOver { winner: Winner },
 }
 
+#[derive(Clone)]
 pub enum Winner {
     Player,
     Dealer,
     Tie,
+}
+
+pub struct Game {
+    deck: Deck,
+    player: Hand,
+    dealer: Hand,
+    stage: GameStage,
 }
 
 impl Default for Game {
@@ -28,7 +30,7 @@ impl Default for Game {
             deck: Deck::new(),
             player: Hand::new(),
             dealer: Hand::new(),
-            state: GameState::PlayerTurn,
+            stage: GameStage::PlayerTurn,
         }
     }
 }
@@ -41,7 +43,7 @@ impl Game {
 
     pub fn start(&mut self) {
         // Deal initial cards
-        let n: u32 = 2;
+        let n: u8 = 2;
         self.player.deal_cards(&mut self.deck, n);
         self.dealer.deal_cards(&mut self.deck, n);
 
@@ -70,7 +72,7 @@ impl Game {
             return;
         }
 
-        if self.dealer.score < 17 {
+        if self.dealer.score() < 17 {
             self.dealer_hit();
         } else {
             self.dealer_stand();
@@ -78,7 +80,7 @@ impl Game {
     }
 
     pub fn select_winner(&mut self) {
-        let winner = match self.player.score.cmp(&self.dealer.score) {
+        let winner = match self.player.score().cmp(&self.dealer.score()) {
             Ordering::Less => Winner::Dealer,
             Ordering::Greater => Winner::Player,
             Ordering::Equal => Winner::Tie,
@@ -98,7 +100,7 @@ impl Game {
     }
 
     fn player_stand(&mut self) {
-        self.transition_to(GameState::DealerTurn);
+        self.transition_to(GameStage::DealerTurn);
     }
 
     fn dealer_hit(&mut self) {
@@ -110,7 +112,7 @@ impl Game {
     }
 
     fn dealer_stand(&mut self) {
-        self.transition_to(GameState::Resolve);
+        self.transition_to(GameStage::Resolve);
     }
 
     fn check_blackjack(&mut self) {
@@ -125,34 +127,98 @@ impl Game {
         }
     }
 
-    fn transition_to(&mut self, new_state: GameState) {
-        self.state = new_state;
+    fn transition_to(&mut self, new_stage: GameStage) {
+        self.stage = new_stage;
     }
 
     fn game_over(&mut self, winner: Winner) {
-        self.transition_to(GameState::GameOver { winner });
+        self.transition_to(GameStage::GameOver { winner });
     }
 }
 
 // Helper methods
 impl Game {
-    pub fn player_hand(&self) -> &Hand {
-        &self.player
+    pub fn player_cards(&self) -> &Vec<String> {
+        self.player.cards()
     }
 
-    pub fn dealer_hand(&self) -> &Hand {
-        &self.dealer
+    pub fn dealer_cards(&self) -> &Vec<String> {
+        self.dealer.cards()
     }
 
     pub fn players_turn(&self) -> bool {
-        matches!(self.state, GameState::PlayerTurn)
+        matches!(self.stage, GameStage::PlayerTurn)
     }
 
     pub fn dealers_turn(&self) -> bool {
-        matches!(self.state, GameState::DealerTurn)
+        matches!(self.stage, GameStage::DealerTurn)
     }
 
     pub fn is_over(&self) -> bool {
-        matches!(self.state, GameState::GameOver { .. })
+        matches!(self.stage, GameStage::GameOver { .. })
+    }
+}
+
+pub struct PublicState {
+    pub dealer_cards: Vec<String>,
+    pub player_cards: Vec<String>,
+    pub dealer_score: u8,
+    pub player_score: u8,
+    pub stage: GameStage,
+}
+
+impl Game {
+    pub fn get_state(&self) -> PublicState {
+        let (dealer_cards, dealer_score) = if self.players_turn() {
+            // During player's turn, show only the first card
+            let first_card: Vec<String> = vec![self.dealer.cards()[0].clone()];
+            let mut temp_hand: Hand = Hand {
+                cards: first_card,
+                score: 0,
+            };
+            temp_hand.calculate_score();
+            (temp_hand.cards().clone(), temp_hand.score())
+        } else {
+            // Show all dealer cards otherwise
+            (self.dealer.cards().clone(), self.dealer.score())
+        };
+
+        PublicState {
+            dealer_cards,
+            player_cards: self.player.cards().clone(),
+            dealer_score,
+            player_score: self.player.score(),
+            stage: self.stage.clone(),
+        }
+    }
+    pub fn show_state(&self) {
+        let state: PublicState = self.get_state();
+
+        println!("===== BLACKJACK =====");
+        println!(
+            "Dealer: {} ({})",
+            state.dealer_cards.join(", "),
+            state.dealer_score
+        );
+        println!(
+            "Player: {} ({})",
+            state.player_cards.join(", "),
+            state.player_score
+        );
+        println!(
+            "{}",
+            match state.stage {
+                GameStage::PlayerTurn => "Your turn - (h)it or (s)tand?",
+                GameStage::DealerTurn => "Dealer's turn",
+                GameStage::Resolve => "Resolving game...",
+                GameStage::GameOver { winner } => match winner {
+                    Winner::Player => "Game over - You win!",
+                    Winner::Dealer => "Game over - Dealer wins!",
+                    Winner::Tie => "Game over - It's a tie!",
+                },
+            }
+        );
+
+        println!("=====================");
     }
 }
