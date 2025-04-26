@@ -47,6 +47,6 @@ fn main() {
         game.select_winner();
     }
 
-    println!("Player: {:?}", game.player);
-    println!("Dealer: {:?}", game.dealer);
+    println!("Player: {:?}", game.player_hand());
+    println!("Dealer: {:?}", game.dealer_hand());
 }
