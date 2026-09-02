@@ -8,4 +8,5 @@
     "files.insertFinalNewline": true,
     "rust-analyzer.checkOnSave": true,
     "rust-analyzer.check.command": "clippy",
+    "vim.showcmd": true
 }

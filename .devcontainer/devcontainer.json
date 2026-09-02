@@ -14,7 +14,8 @@
                 "rust-lang.rust-analyzer",
                 "github.vscode-github-actions",
                 "github.copilot",
-                "gitHub.copilot-chat"
+                "gitHub.copilot-chat",
+                "vscodevim.vim"
             ]
         }
     },
