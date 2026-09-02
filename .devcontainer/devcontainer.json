@@ -23,6 +23,9 @@
         8000,
         3000
     ],
+    "mounts": [
+        "source=${localEnv:HOME}/dotfiles,target=/workspaces/.dotfiles,type=bind,consistency=cached"
+    ],
     // Use 'postCreateCommand' to run commands after the container is created.
     // Use updateContent when stuff has to be installed into the image,
     // postcreate to do commands in userspace after container has been started

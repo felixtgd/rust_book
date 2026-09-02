@@ -23,4 +23,7 @@ function postConfig(){
     sudo install lazygit /usr/local/bin
     rm lazygit.tar.gz lazygit
 
+    # OpenCode CLI
+    curl -fsSL https://opencode.ai/install | bash
+
 }
